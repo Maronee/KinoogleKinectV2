@@ -1,0 +1,204 @@
+﻿<Window x:Class="KinectHandTracking.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:k="http://schemas.microsoft.com/kinect/2014"
+        Title="Kinect 2 hand tracking" Height="800" Width="1200" Loaded="Window_Loaded" Closed="Window_Closed">
+    <k:KinectRegion x:Name="kinectRegion">
+    <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0"  Style="{StaticResource ContainerStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" Width="Auto">                
+                <WrapPanel>
+                    <TextBlock Text="Detected gesture: " Style="{StaticResource TitleStyle}" Margin="10" />
+                    <TextBlock Name="gestName" Text="-" Style="{StaticResource TitleStyle}" Margin="10" />
+                    <TextBlock Text="Confidence: " Style="{StaticResource TitleStyle}" Margin="100 10 10 10" />
+                    <TextBlock Name="gestConf" Text="-" Style="{StaticResource TitleStyle}" Margin="10" />
+                    <TextBlock Text="Distance: " Style="{StaticResource TitleStyle}" Margin="100 10 10 10" />
+                    <TextBlock Name="dist" Text="-" Style="{StaticResource TitleStyle}" Margin="10" />
+                    <TextBlock Text="Delta: " Style="{StaticResource TitleStyle}" Margin="100 10 10 10" />
+                    <TextBlock Name="delta" Text="-" Style="{StaticResource TitleStyle}" Margin="10" />
+                    <TextBlock Text="DA: " Style="{StaticResource TitleStyle}" Margin="100 10 10 10" />
+                    <TextBlock Name="da" Text="-" Style="{StaticResource TitleStyle}" Margin="10" />
+                    <TextBlock Text="MA: " Style="{StaticResource TitleStyle}" Margin="100 10 10 10" />
+                    <TextBlock Name="ma" Text="-" Style="{StaticResource TitleStyle}" Margin="10" />
+                </WrapPanel>
+                
+            </Grid>
+        
+            <Viewbox Grid.Row="1">
+            <Grid Width="1920" Height="1080">
+                <Image Name="camera" />
+                <Canvas Name="canvas" />
+            </Grid>
+        </Viewbox>
+            
+        <Grid Grid.Row="1" Style="{StaticResource ContainerStyle}" Width="600" HorizontalAlignment="Right">
+                <StackPanel Margin="5 50 5 3">
+                    <StackPanel>
+                    <!--<TextBlock Text="Hand state gesture: " Style="{StaticResource TitleStyle}" />
+                    <TextBlock Name="handGestState" Text="-" Style="{StaticResource StateStyle}" />-->
+                        <WrapPanel>
+                            <StackPanel>
+                                <TextBlock Text="Right hand state:" Style="{StaticResource TitleStyle}" />
+                                <TextBlock Name="tblRightHandState" Text="-" Style="{StaticResource StateStyle}" />
+                            </StackPanel>
+                            <StackPanel Margin="20,0,0,0">
+                                <TextBlock Text="Left hand state:" Style="{StaticResource TitleStyle}" />
+                                <TextBlock Name="tblLeftHandState" Text="-" Style="{StaticResource StateStyle}" />
+
+                            </StackPanel>
+                        </WrapPanel>
+                    
+                    
+                    <TextBlock Text="Detected handgesture: " Style="{StaticResource TitleStyle}" />
+                    <TextBlock Name="gestState" Text="-" Style="{StaticResource StateStyle}" />
+                </StackPanel>
+                
+                    <WrapPanel HorizontalAlignment="Stretch"  Margin="0,50,0,0">
+                        <TextBlock Text="LeftUp: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="leftUpTB" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                        <TextBlock Text="Confidence: " FontSize="30" Foreground="White" />
+                        <TextBlock x:Name="luconf" Text="-" FontSize="30" Foreground="White" Width="60" />
+                    </WrapPanel>
+                    <WrapPanel HorizontalAlignment="Stretch"  >
+                        <TextBlock Text="UpLeft: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="upLeftTb" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                        <TextBlock Text="Confidence: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="ulconf" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                    </WrapPanel>
+                    <WrapPanel HorizontalAlignment="Stretch"  >
+                        <TextBlock Text="UpUp: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="upUpTB" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                        <TextBlock Text="Confidence: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="uuconf" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                    </WrapPanel>
+                    <WrapPanel HorizontalAlignment="Stretch"  >
+                        <TextBlock Text="LeftRight: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="leftRightTB" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                        <TextBlock Text="Confidence: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="lrconf" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                    </WrapPanel>
+                    <WrapPanel HorizontalAlignment="Stretch"  >
+                        <TextBlock Text="Stretched: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="stretchedtb" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                        <TextBlock Text="Confidence: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="stretchedconf" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                    </WrapPanel>
+                    <WrapPanel HorizontalAlignment="Stretch"  >
+                        <TextBlock Text="Touchdown: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="touchdownTB" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                        <TextBlock Text="Confidence: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="touchconf" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                    </WrapPanel>
+                    <WrapPanel HorizontalAlignment="Stretch"  >
+                        <TextBlock Text="Turn Right: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="turnRTB" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                        <TextBlock Text="Confidence: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="turnRconf" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                    </WrapPanel>
+                    <WrapPanel HorizontalAlignment="Stretch"  >
+                        <TextBlock Text="Turn Left: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="turnLTB" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                        <TextBlock Text="Confidence: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="turnLconf" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                    </WrapPanel>
+                    <WrapPanel HorizontalAlignment="Stretch"  >
+                        <TextBlock Text="Walking Right: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="walkRTB" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                        <TextBlock Text="Confidence: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="walkRconf" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                    </WrapPanel>
+                    <WrapPanel HorizontalAlignment="Stretch"  >
+                        <TextBlock Text="Walking Left: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="walkLTB" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                        <TextBlock Text="Confidence: " FontSize="30" Foreground="White"/>
+                        <TextBlock x:Name="walkLconf" Text="-" FontSize="30" Foreground="White" Width="60"/>
+                    </WrapPanel>
+
+                    <StackPanel Visibility="Hidden">
+                    <WrapPanel  >
+                        <TextBlock Text="Is in rectangle region?" Style="{StaticResource TitleStyle}" Margin="10"/>
+                        <TextBlock x:Name="boxRegion" Text="-" x:FieldModifier="public"  Style="{StaticResource TitleStyle}" Margin="10"/>
+                    </WrapPanel>
+                    <WrapPanel  >
+                        <TextBlock Text="Is in circle region?" Style="{StaticResource TitleStyle}" Margin="10"/>
+                        <TextBlock x:Name="circRegion" Text="-"  Style="{StaticResource TitleStyle}" Margin="10"/>
+                    </WrapPanel>
+                    <WrapPanel  >
+                        <TextBlock Text="Is inbetween line region?" Style="{StaticResource TitleStyle}" Margin="10"/>
+                        <TextBlock x:Name="lineRegion" Text="-"  Style="{StaticResource TitleStyle}" Margin="10"/>
+                    </WrapPanel>
+                    
+                    <WrapPanel  >
+                        <TextBlock Text="X: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                        <TextBlock Name="lx" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                        <TextBlock Text="Y: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                        <TextBlock Name="ly" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                        <TextBlock Text="Z: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                        <TextBlock Name="lz" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                    </WrapPanel>
+                    <WrapPanel  >
+                        <TextBlock Text="X: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                        <TextBlock Name="rx" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                        <TextBlock Text="Y: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                        <TextBlock Name="ry" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                        <TextBlock Text="Z: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                        <TextBlock Name="rz" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                    </WrapPanel>
+                    <WrapPanel  >
+                        <StackPanel Margin="0,20,0,0">
+                            <TextBlock Text="Left Thumb:" Style="{StaticResource TitleStyle}" />
+                            <WrapPanel>
+                                <TextBlock Text="X: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Name="lthx" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Text="Y: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Name="lthy" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Text="Z: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Name="lthz" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                            </WrapPanel>
+                        </StackPanel>
+                        <StackPanel Margin="0,20,0,0">
+                            <TextBlock Text="Right thumb:" Style="{StaticResource TitleStyle}" />
+                            <WrapPanel>
+                                <TextBlock Text="X: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Name="rthx" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Text="Y: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Name="rthy" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Text="Z: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Name="rthz" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                            </WrapPanel>
+                        </StackPanel>
+                    </WrapPanel>
+                    <WrapPanel  >
+                        <StackPanel Margin="0,20,0,0">
+                            <TextBlock Text="Left tip:" Style="{StaticResource TitleStyle}" />
+                            <WrapPanel>
+                                <TextBlock Text="X: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Name="ltx" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Text="Y: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Name="lty" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Text="Z: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Name="ltz" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                            </WrapPanel>
+                        </StackPanel>
+                        <StackPanel Margin="0,20,0,0">
+                            <TextBlock Text="Right tip:" Style="{StaticResource TitleStyle}" />
+                            <WrapPanel>
+                                <TextBlock Text="X: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Name="rtx" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Text="Y: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Name="rty" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Text="Z: " Style="{StaticResource TitleStyle}" Margin="5"/>
+                                <TextBlock Name="rtz" Text="-" Style="{StaticResource TitleStyle}" Margin="5"/>
+                            </WrapPanel>
+                        </StackPanel>
+                    </WrapPanel>
+                    </StackPanel>
+
+                </StackPanel>
+        </Grid>
+    </Grid>
+    </k:KinectRegion>
+</Window>
