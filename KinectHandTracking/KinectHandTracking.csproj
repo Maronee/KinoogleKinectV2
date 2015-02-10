@@ -138,7 +138,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Extensions.cs" />
-    <Compile Include="KinoogleDetector.cs" />
+    <Compile Include="DetectorClass\KinoogleDetector.cs" />
+    <Compile Include="InterfaceVersion\KinoogleExtensions.cs" />
+    <Compile Include="InterfaceVersion\KinoogleInterface.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

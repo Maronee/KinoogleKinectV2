@@ -13,13 +13,15 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Kinect.Wpf.Controls;
+using Microsoft.Kinect.VisualGestureBuilder;
 
 namespace KinectHandTracking
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, KinoogleInterface
     {
         #region Members
 
@@ -34,7 +36,6 @@ namespace KinectHandTracking
         public MainWindow()
         {
             InitializeComponent();
-            
         }
 
         #endregion
@@ -56,23 +57,24 @@ namespace KinectHandTracking
             App app = ((App)Application.Current);
             app.kinectRegion = this.kinectRegion;
             app.kinectSensor = this.sensor;
-            detector = new KinoogleDetector();
+            startKinoogleDetection();
+            //detector = new KinoogleDetector();
             
-            detector.PanGesture += states_PanGesture;
-            detector.RotateGesture += states_RotateGesture;
-            detector.TiltGesture += states_TiltGesture;
-            detector.ZoomGesture += states_ZoomGesture;
+            //detector.PanGesture += states_PanGesture;
+            //detector.RotateGesture += states_RotateGesture;
+            //detector.TiltGesture += states_TiltGesture;
+            //detector.ZoomGesture += states_ZoomGesture;
 
-            detector.UpRightGesture += vgbDetector_UpRightGesture;
-            detector.LeftUpGesture += vgbDetector_LeftUpGesture;
-            detector.LeftRightGesture += vgbDetector_LeftRightGesture;
-            detector.UpUpGesture += vgbDetector_UpUpGesture;
-            detector.TouchdownGesture += vgbDetector_TouchdownGesture;
-            detector.StretchedGesture += vgbDetector_StretchedGesture;
-            detector.TurnLeftGesture += vgbDetector_TurnLeftGesture;
-            detector.TurnRightGesture += vgbDetector_TurnRightGesture;
-            detector.WalkingLeftGesture += vgbDetector_WalkingLeftGesture;
-            detector.WalkingRightGesture += vgbDetector_WalkingRightGesture;
+            //detector.UpRightGesture += vgbDetector_UpRightGesture;
+            //detector.LeftUpGesture += vgbDetector_LeftUpGesture;
+            //detector.LeftRightGesture += vgbDetector_LeftRightGesture;
+            //detector.UpUpGesture += vgbDetector_UpUpGesture;
+            //detector.TouchdownGesture += vgbDetector_TouchdownGesture;
+            //detector.StretchedGesture += vgbDetector_StretchedGesture;
+            //detector.TurnLeftGesture += vgbDetector_TurnLeftGesture;
+            //detector.TurnRightGesture += vgbDetector_TurnRightGesture;
+            //detector.WalkingLeftGesture += vgbDetector_WalkingLeftGesture;
+            //detector.WalkingRightGesture += vgbDetector_WalkingRightGesture;
             
             
         }
@@ -93,7 +95,7 @@ namespace KinectHandTracking
             {
                 if (frame != null)
                 {
-                    this.gestState.Text = this.detector.gestureState.ToString();
+                    this.gestState.Text = gestureState.ToString();
                     this.bodies = new Body[frame.BodyFrameSource.BodyCount];
                     frame.GetAndRefreshBodyData(bodies);
                     foreach (var body in bodies)
@@ -134,6 +136,7 @@ namespace KinectHandTracking
             }
         }
         #region Events
+        /*
         void states_ZoomGesture()
         {
             gestDetect();
@@ -255,7 +258,8 @@ namespace KinectHandTracking
             Console.WriteLine(xDiff + "____" + yDiff);
             gestDetect();
         }
-
+        */
+        #endregion
         private void gestDetect()
         {
             if (upLeftTb.Text == "true")
@@ -351,7 +355,6 @@ namespace KinectHandTracking
             this.gestName.Text = name;
             this.gestConf.Text = conf.ToString();
         }
-        #endregion
         private void Window_Closed(object sender, EventArgs e)
         {
             if (reader != null)
@@ -602,6 +605,340 @@ namespace KinectHandTracking
             //Console.WriteLine("L X: " + l.X + "  " + "L Y" + l.Y + "  " + "R X: " + r.X + "  " + "R Y" + r.Y);
             // Add the ellipse to the canvas.
             canvas.Children.Add(poly);
+        }
+
+        #endregion
+        #region Kinoogle Interface Implementation
+        KinectRegion _kinectRegion;
+        KinectSensor _kinectSensor;
+        Body[] _bodies;
+        ulong _currentTrackedId;
+        CameraSpacePoint _leftHandOrigin;
+        CameraSpacePoint _rightHandOrigin;
+        CameraSpacePoint _leftHandCycle;
+        CameraSpacePoint _rightHandCycle;
+        BodyFrameReader _bodyReader;
+        int _counter;
+        int _currentCount;
+        bool _constantHandState;
+        KinoogleExtensions.HandGesture _gestureState;
+        VisualGestureBuilderFrameSource _vgbFrameSource;
+        VisualGestureBuilderFrameReader _vgbFrameReader;
+
+        KinectRegion KinoogleInterface.kinectRegion
+        {
+            get
+            {
+                return _kinectRegion;
+            }
+            set
+            {
+                _kinectRegion = value;
+            }
+        }
+
+        public KinectSensor kinectSensor
+        {
+            get
+            {
+                return _kinectSensor;
+            }
+            set
+            {
+                _kinectSensor = value;
+            }
+        }
+
+        Body[] KinoogleInterface.bodies
+        {
+            get
+            {
+                return _bodies;
+            }
+            set
+            {
+                _bodies = value;
+            }
+        }
+
+        public ulong currentTrackedId
+        {
+            get
+            {
+                return _currentTrackedId;
+            }
+            set
+            {
+                _currentTrackedId = value;
+            }
+        }
+
+        public CameraSpacePoint leftHandOrigin
+        {
+            get
+            {
+                return _leftHandOrigin;
+            }
+            set
+            {
+                _leftHandOrigin = value;
+            }
+        }
+
+        public CameraSpacePoint rightHandOrigin
+        {
+            get
+            {
+                return _rightHandOrigin;
+            }
+            set
+            {
+                _rightHandOrigin = value;
+            }
+        }
+
+        public CameraSpacePoint leftHandCycle
+        {
+            get
+            {
+                return _leftHandCycle;
+            }
+            set
+            {
+                _leftHandCycle = value;
+            }
+        }
+
+        public CameraSpacePoint rightHandCycle
+        {
+            get
+            {
+                return _rightHandCycle;
+            }
+            set
+            {
+                _rightHandCycle = value;
+            }
+        }
+
+        public BodyFrameReader bodyReader
+        {
+            get
+            {
+                return _bodyReader;
+            }
+            set
+            {
+                _bodyReader = value;
+            }
+        }
+
+        public int counter
+        {
+            get
+            {
+                return _counter;
+            }
+            set
+            {
+                _counter = value;
+            }
+        }
+
+        public int currentCount
+        {
+            get
+            {
+                return _currentCount;
+            }
+            set
+            {
+                _currentCount = value;
+            }
+        }
+
+        public bool constantHandState
+        {
+            get
+            {
+                return _constantHandState;
+            }
+            set
+            {
+                _constantHandState = value;
+            }
+        }
+
+        public KinoogleExtensions.HandGesture gestureState
+        {
+            get
+            {
+                return _gestureState;
+            }
+            set
+            {
+                _gestureState = value;
+            }
+        }
+
+        public VisualGestureBuilderFrameSource vgbFrameSource
+        {
+            get
+            {
+                return _vgbFrameSource;
+            }
+            set
+            {
+                _vgbFrameSource = value;
+            }
+        }
+
+        public VisualGestureBuilderFrameReader vgbFrameReader
+        {
+            get
+            {
+                return _vgbFrameReader;
+            }
+            set
+            {
+                _vgbFrameReader = value;
+            }
+        }
+
+        public void startKinoogleDetection()
+        {
+            this.initKinoogle();
+        }
+      
+
+        public void bodyReader_FrameArrived(object sender, BodyFrameArrivedEventArgs e)
+        {
+            this.kinoogleBodyFrameHandler(e);
+        }
+
+        public void vgbFrameReader_FrameArrived(object sender, Microsoft.Kinect.VisualGestureBuilder.VisualGestureBuilderFrameArrivedEventArgs e)
+        {
+            this.kinoogleVgbFrameHandler(e);
+        }
+
+        public void onPan(float xDiff, float yDiff)
+        {
+            gestDetect();
+        }
+
+        public void onRotate()
+        {
+            gestDetect();
+        }
+
+        public void onTilt()
+        {
+            gestDetect();
+        }
+
+        public void onZoom()
+        {
+            gestDetect();
+        }
+
+        public void onUpUp(bool isDetected, float confidence)
+        {
+            upUpTB.Text = isDetected.ToString();
+            uuconf.Text = confidence.ToString();
+            if (isDetected)
+            {
+                gestDetect("upUp", confidence);
+            }
+        }
+
+        public void onUpRight(bool isDetected, float confidence)
+        {
+            upLeftTb.Text = isDetected.ToString();
+            ulconf.Text = confidence.ToString();
+            if (isDetected)
+            {
+                gestDetect("Up Right", confidence);
+            }
+        }
+
+        public void onLeftRight(bool isDetected, float confidence)
+        {
+            leftRightTB.Text = isDetected.ToString();
+            lrconf.Text = confidence.ToString();
+            if (isDetected)
+            {
+                gestDetect("Left Right", confidence);
+            }
+        }
+
+        public void onLeftUp(bool isDetected, float confidence)
+        {
+            leftUpTB.Text = isDetected.ToString();
+            luconf.Text = confidence.ToString();
+            if (isDetected)
+            {
+                gestDetect("Left Up", confidence);
+            }
+        }
+
+        public void onTouchdown(bool isDetected, float confidence)
+        {
+            touchdownTB.Text = isDetected.ToString();
+            touchconf.Text = confidence.ToString();
+            if (isDetected)
+            {
+                gestDetect("touchdown", confidence);
+            }
+        }
+
+        public void onStretched(bool isDetected, float confidence)
+        {
+            stretchedtb.Text = isDetected.ToString();
+            stretchedconf.Text = confidence.ToString();
+            if (isDetected)
+            {
+                gestDetect("Stretched Arms", confidence);
+            }
+        }
+
+        public void onTurnRight(bool isDetected, float confidence)
+        {
+            turnRTB.Text = isDetected.ToString();
+            turnRconf.Text = confidence.ToString();
+            if (isDetected)
+            {
+                gestDetect("Turn Right", confidence);
+            }
+        }
+
+        public void onTurnLeft(bool isDetected, float confidence)
+        {
+            turnLTB.Text = isDetected.ToString();
+            turnLconf.Text = confidence.ToString();
+            if (isDetected)
+            {
+                gestDetect("Turn Left", confidence);
+            }
+        }
+
+        public void onWalkingRight(bool isDetected, float confidence)
+        {
+            walkRTB.Text = isDetected.ToString();
+            walkRconf.Text = confidence.ToString();
+            if (isDetected)
+            {
+                gestDetect("Walking Right", confidence);
+            }
+        }
+
+        public void onWalkingLeft(bool isDetected, float confidence)
+        {
+            walkLTB.Text = isDetected.ToString();
+            walkLconf.Text = confidence.ToString();
+            if (isDetected)
+            {
+                gestDetect("Walking Left", confidence);
+            }
         }
 
         #endregion

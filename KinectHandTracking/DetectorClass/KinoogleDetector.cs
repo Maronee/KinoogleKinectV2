@@ -551,7 +551,7 @@ namespace KinectHandTracking
                                                 this.gestureState = HandGesture.zoom;
                                                 this.leftHandCycle = handLeft.Position;
                                                 this.rightHandCycle = handRight.Position;
-                                                continue;
+                                                break;
                                             }
                                             if ((Math.Abs(mGrowth) > 3.0) && ((Math.Abs(leftCurrentOriginXdiff) < 0.2) && (Math.Abs(rightCurrentOriginXdiff) < 0.2)))
                                             {
@@ -559,13 +559,13 @@ namespace KinectHandTracking
                                                 {
                                                     this.currentCount = this.counter;
                                                     this.gestureState = HandGesture.rotate;
-                                                    continue;
+                                                    break;
                                                 }
                                                 if ((leftCurrentOriginYdiff > 0f) && (rightCurrentOriginYdiff < 0f))
                                                 {
                                                     this.currentCount = this.counter;
                                                     this.gestureState = HandGesture.rotate;
-                                                    continue;
+                                                    break;
                                                 }
                                             }
                                         }
@@ -575,13 +575,13 @@ namespace KinectHandTracking
                                             {
                                                 this.currentCount = this.counter;
                                                 this.gestureState = HandGesture.tilt;
-                                                continue;
+                                                break;
                                             }
                                             if ((leftCurrentOriginZdiff > 0f) && (rightCurrentOriginZdiff < 0f))
                                             {
                                                 this.currentCount = this.counter;
                                                 this.gestureState = HandGesture.tilt;
-                                                continue;
+                                                break;
                                             }
                                         }
                                     }                                                                      
