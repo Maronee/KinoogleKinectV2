@@ -537,7 +537,7 @@ namespace KinectHandTracking
                                         rightCurrentOriginXdiff = handRight.Position.X - rightHandOrigin.X;
 
                                         //check for zoom
-                                        if ((Math.Abs(leftCurrentOriginZdiff) < 0.2) && (Math.Abs(rightCurrentOriginZdiff) < 0.2))
+                                        if ((Math.Abs(leftCurrentOriginZdiff) < 0.1) && (Math.Abs(rightCurrentOriginZdiff) < 0.1))
                                         {
                                             originDistance = this.pointsDistance(this.leftHandOrigin, this.rightHandOrigin);
                                             currentDistance = this.pointsDistance(handLeft.Position, handRight.Position);
@@ -569,7 +569,7 @@ namespace KinectHandTracking
                                                 }
                                             }
                                         }
-                                        else if ((Math.Abs(leftCurrentOriginXdiff) < 0.08) && (Math.Abs(rightCurrentOriginXdiff) < 0.08))
+                                        else if ((Math.Abs(leftCurrentOriginXdiff) < 0.1) && (Math.Abs(rightCurrentOriginXdiff) < 0.1))
                                         {
                                             if ((leftCurrentOriginZdiff < 0f) && (rightCurrentOriginZdiff > 0f))
                                             {
