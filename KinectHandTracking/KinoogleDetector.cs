@@ -119,7 +119,6 @@ namespace KinectHandTracking
         }
         public KinoogleDetector()
         {
-            Console.WriteLine("hi");
             App app = (App)Application.Current;
             this.kinectRegion = app.kinectRegion;
             this.sensor = app.kinectSensor;
@@ -466,7 +465,7 @@ namespace KinectHandTracking
                                 double mXZgrowth = mXZcurrent / mXZorigin;
                                 if (Math.Abs((double) (1.0 - Math.Abs(mXZgrowth))) < 4.0)
                                 {
-                                    if ((Math.Abs(leftCurrentOriginXdiff) < 0.05) && (Math.Abs(rightCurrentOriginXdiff) < 0.05))
+                                    if ((Math.Abs(leftCurrentOriginXdiff) < 0.15) && (Math.Abs(rightCurrentOriginXdiff) < 0.15))
                                     {
                                         if ((leftCurrentOriginYdiff < 0f) && (rightCurrentOriginYdiff > 0f))
                                         {
@@ -522,7 +521,7 @@ namespace KinectHandTracking
                                     this.constantHandState = true;
                                 }
 
-                                if (currentCount + 10 == counter)
+                                if (currentCount + 5 == counter)
                                 {
                                     float maxLeftChange = Math.Max(diffAbsolut(handLeft.Position.X, leftHandOrigin.X), Math.Max(diffAbsolut(handLeft.Position.Y, leftHandOrigin.Y), diffAbsolut(handLeft.Position.Z, leftHandOrigin.Z)));
                                     float maxRightChange = Math.Max(diffAbsolut(handRight.Position.X, rightHandOrigin.X), Math.Max(diffAbsolut(handRight.Position.Y, rightHandOrigin.Y), diffAbsolut(handRight.Position.Z, rightHandOrigin.Z)));
@@ -538,7 +537,7 @@ namespace KinectHandTracking
                                         rightCurrentOriginXdiff = handRight.Position.X - rightHandOrigin.X;
 
                                         //check for zoom
-                                        if ((Math.Abs(leftCurrentOriginZdiff) < 0.08) && (Math.Abs(rightCurrentOriginZdiff) < 0.08))
+                                        if ((Math.Abs(leftCurrentOriginZdiff) < 0.2) && (Math.Abs(rightCurrentOriginZdiff) < 0.2))
                                         {
                                             originDistance = this.pointsDistance(this.leftHandOrigin, this.rightHandOrigin);
                                             currentDistance = this.pointsDistance(handLeft.Position, handRight.Position);
@@ -554,7 +553,7 @@ namespace KinectHandTracking
                                                 this.rightHandCycle = handRight.Position;
                                                 continue;
                                             }
-                                            if ((Math.Abs(mGrowth) > 6.0) && ((Math.Abs(leftCurrentOriginXdiff) < 0.08) && (Math.Abs(rightCurrentOriginXdiff) < 0.08)))
+                                            if ((Math.Abs(mGrowth) > 3.0) && ((Math.Abs(leftCurrentOriginXdiff) < 0.2) && (Math.Abs(rightCurrentOriginXdiff) < 0.2)))
                                             {
                                                 if ((leftCurrentOriginYdiff < 0f) && (rightCurrentOriginYdiff > 0f))
                                                 {
@@ -570,7 +569,7 @@ namespace KinectHandTracking
                                                 }
                                             }
                                         }
-                                        if ((Math.Abs(leftCurrentOriginXdiff) < 0.08) && (Math.Abs(rightCurrentOriginXdiff) < 0.08))
+                                        else if ((Math.Abs(leftCurrentOriginXdiff) < 0.08) && (Math.Abs(rightCurrentOriginXdiff) < 0.08))
                                         {
                                             if ((leftCurrentOriginZdiff < 0f) && (rightCurrentOriginZdiff > 0f))
                                             {
@@ -691,25 +690,39 @@ namespace KinectHandTracking
 
                                 if ((Math.Abs(leftCurrentOriginZdiff) < 0.15) && (Math.Abs(rightCurrentOriginZdiff) < 0.15))
                                 {
-                                    if ((Math.Abs((double)(1.0 - Math.Abs(distanceGrowth))) < 0.1) && (mGrowth > 3.0))
+                                    if (Math.Abs(handLeft.Position.X - leftHandCycle.X) < 0.03 && Math.Abs(handRight.Position.X - rightHandCycle.X) < 0.03)
                                     {
-                                        this.gestureState = HandGesture.closed;
-                                        this.leftHandOrigin = handLeft.Position;
-                                        this.rightHandOrigin = handRight.Position;
-                                        this.leftHandCycle = new CameraSpacePoint();
-                                        this.rightHandCycle = new CameraSpacePoint();
-                                        this.currentCount = this.counter - 4;
+                                        if (Math.Abs(handLeft.Position.Y - leftHandCycle.Y) > 0.04 && Math.Abs(handRight.Position.Y - rightHandCycle.Y) > 0.04)
+                                        {
+                                            this.gestureState = HandGesture.closed;
+                                            this.leftHandOrigin = handLeft.Position;
+                                            this.rightHandOrigin = handRight.Position;
+                                            this.leftHandCycle = new CameraSpacePoint();
+                                            this.rightHandCycle = new CameraSpacePoint();
+                                            this.currentCount = this.counter - 4;
+                                        }
                                     }
+
+                                    //if ((Math.Abs((double)(1.0 - Math.Abs(distanceGrowth))) < 0.1) && (mGrowth > 3.0))
+                                    //{
+                                    //    this.gestureState = HandGesture.closed;
+                                    //    this.leftHandOrigin = handLeft.Position;
+                                    //    this.rightHandOrigin = handRight.Position;
+                                    //    this.leftHandCycle = new CameraSpacePoint();
+                                    //    this.rightHandCycle = new CameraSpacePoint();
+                                    //    this.currentCount = this.counter - 4;
+                                    //}
                                     else
                                     {
-                                        if ((this.currentCount + 5) == this.counter)
+                                        if ((this.currentCount + 15) == this.counter)
                                         {
                                             this.leftHandCycle = handLeft.Position;
                                             this.rightHandCycle = handRight.Position;
-                                        }
-                                        this.currentCount = this.counter;
+                                            this.currentCount = this.counter;
+                                        }                                        
                                         this.onZoom();
                                     }
+                                    Console.WriteLine("hihjo");
                                 }
                                 else
                                 {

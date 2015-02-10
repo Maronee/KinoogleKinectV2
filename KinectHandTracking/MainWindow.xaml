@@ -13,15 +13,15 @@
                 <WrapPanel>
                     <TextBlock Text="Detected gesture: " Style="{StaticResource TitleStyle}" Margin="10" />
                     <TextBlock Name="gestName" Text="-" Style="{StaticResource TitleStyle}" Margin="10" />
-                    <TextBlock Text="Confidence: " Style="{StaticResource TitleStyle}" Margin="100 10 10 10" />
+                    <TextBlock Text="Confidence: " Style="{StaticResource TitleStyle}" Margin="70 10 10 10" />
                     <TextBlock Name="gestConf" Text="-" Style="{StaticResource TitleStyle}" Margin="10" />
-                    <TextBlock Text="Distance: " Style="{StaticResource TitleStyle}" Margin="100 10 10 10" />
+                    <TextBlock Text="Distance: " Style="{StaticResource TitleStyle}" Margin="70 10 10 10" />
                     <TextBlock Name="dist" Text="-" Style="{StaticResource TitleStyle}" Margin="10" />
-                    <TextBlock Text="Delta: " Style="{StaticResource TitleStyle}" Margin="100 10 10 10" />
+                    <TextBlock Text="Delta: " Style="{StaticResource TitleStyle}" Margin="70 10 10 10" />
                     <TextBlock Name="delta" Text="-" Style="{StaticResource TitleStyle}" Margin="10" />
-                    <TextBlock Text="DA: " Style="{StaticResource TitleStyle}" Margin="100 10 10 10" />
+                    <TextBlock Text="DA: " Style="{StaticResource TitleStyle}" Margin="70 10 10 10" />
                     <TextBlock Name="da" Text="-" Style="{StaticResource TitleStyle}" Margin="10" />
-                    <TextBlock Text="MA: " Style="{StaticResource TitleStyle}" Margin="100 10 10 10" />
+                    <TextBlock Text="MA: " Style="{StaticResource TitleStyle}" Margin="70 10 10 10" />
                     <TextBlock Name="ma" Text="-" Style="{StaticResource TitleStyle}" Margin="10" />
                 </WrapPanel>
                 
