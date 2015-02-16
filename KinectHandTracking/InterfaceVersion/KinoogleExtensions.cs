@@ -173,6 +173,7 @@ namespace KinectHandTracking
                 }
             }
         }
+
         private static void checkForHandGesture(KinoogleInterface obj)
         {
             foreach (var body in obj.bodies)
@@ -202,6 +203,9 @@ namespace KinectHandTracking
                         float mOrigin;
                         float mCurrent;
                         float mGrowth;
+
+                        float maxLeftChange;
+                        float maxRightChange;
                         
                         switch (obj.gestureState)
                         {
@@ -283,30 +287,81 @@ namespace KinectHandTracking
                                 double mXZgrowth = mXZcurrent / mXZorigin;
                                 if (Math.Abs((double)(1.0 - Math.Abs(mXZgrowth))) < 4.0)
                                 {
-                                    if ((Math.Abs(leftCurrentOriginXdiff) < 0.15) && (Math.Abs(rightCurrentOriginXdiff) < 0.15))
+                                    if ((Math.Abs(leftCurrentOriginXdiff) < 0.1) && (Math.Abs(rightCurrentOriginXdiff) < 0.1))
                                     {
                                         if ((leftCurrentOriginYdiff < 0f) && (rightCurrentOriginYdiff > 0f))
                                         {
                                             obj.currentCount = obj.counter;
                                             obj.onRotate();
+                                            obj.leftHandCycle = handLeft.Position;
+                                            obj.rightHandCycle = handRight.Position;
+                                            break;
                                         }
                                         else if ((leftCurrentOriginYdiff > 0f) && (rightCurrentOriginYdiff < 0f))
                                         {
                                             obj.currentCount = obj.counter;
                                             obj.onRotate();
+                                            obj.leftHandCycle = handLeft.Position;
+                                            obj.rightHandCycle = handRight.Position;
+                                            break;
                                         }
                                     }
                                     else
                                     {
-                                        obj.gestureState = HandGesture.closed;
-                                        obj.leftHandOrigin = handLeft.Position;
-                                        obj.rightHandOrigin = handRight.Position;
-                                        obj.currentCount = obj.counter - 4;
+                                        float leftCurrentCycleYdiff = handLeft.Position.Y - obj.leftHandCycle.Y;
+                                        float rightCurrentCycleYdiff = handRight.Position.Y - obj.rightHandCycle.Y;
+                                        float leftCurrentCycleXdiff = handLeft.Position.X - obj.leftHandCycle.X;
+                                        float rightCurrentCycleXdiff = handRight.Position.X - obj.rightHandCycle.X;
+
+                                        if (leftCurrentCycleXdiff < 0 && leftCurrentCycleYdiff > 0 && rightCurrentCycleXdiff > 0 && rightCurrentCycleYdiff < 0) { }
+                                        else if (leftCurrentCycleXdiff < 0 && leftCurrentCycleYdiff < 0 && rightCurrentCycleXdiff > 0 && rightCurrentCycleYdiff > 0) { }
+                                        else if (leftCurrentCycleXdiff < 0 && leftCurrentCycleYdiff == 0 && rightCurrentCycleXdiff > 0 && rightCurrentCycleYdiff == 0) { }
+                                        else if (leftCurrentOriginXdiff > 0 && leftCurrentOriginYdiff < 0 && rightCurrentOriginXdiff < 0 && rightCurrentOriginYdiff > 0) { }
+                                        else if (leftCurrentOriginXdiff > 0 && leftCurrentOriginYdiff > 0 && rightCurrentOriginXdiff < 0 && rightCurrentOriginYdiff < 0) { }
+                                        else
+                                        {
+                                            obj.currentCount = obj.counter;
+                                            obj.leftHandCycle = new CameraSpacePoint();
+                                            obj.rightHandCycle = new CameraSpacePoint();
+                                            obj.leftHandOrigin = handLeft.Position;
+                                            obj.rightHandOrigin = handRight.Position;
+                                            obj.gestureState = HandGesture.closed;
+                                            break;
+                                        }
+                                        obj.currentCount = obj.counter;
+                                        obj.leftHandOrigin = obj.leftHandCycle;
+                                        obj.rightHandOrigin = obj.rightHandCycle;
+                                        obj.leftHandCycle = handLeft.Position;
+                                        obj.rightHandCycle = handLeft.Position;
+                                        obj.gestureState = HandGesture.zoom;
+                                        break;
                                     }
                                 }
                                 else
                                 {
+                                    if ((leftCurrentOriginZdiff < 0f) && (rightCurrentOriginZdiff > 0f))
+                                    {
+                                        obj.currentCount = obj.counter;
+                                        obj.gestureState = HandGesture.tilt;
+                                        obj.leftHandCycle = new CameraSpacePoint();
+                                        obj.rightHandCycle = new CameraSpacePoint();
+                                        obj.leftHandOrigin = handLeft.Position;
+                                        obj.rightHandOrigin = handRight.Position;
+                                        break;
+                                    }
+                                    if ((leftCurrentOriginZdiff > 0f) && (rightCurrentOriginZdiff < 0f))
+                                    {
+                                        obj.currentCount = obj.counter;
+                                        obj.gestureState = HandGesture.tilt;
+                                        obj.leftHandCycle = new CameraSpacePoint();
+                                        obj.rightHandCycle = new CameraSpacePoint();
+                                        obj.leftHandOrigin = handLeft.Position;
+                                        obj.rightHandOrigin = handRight.Position;
+                                        break;
+                                    }
                                     obj.gestureState = HandGesture.closed;
+                                    obj.leftHandCycle = new CameraSpacePoint();
+                                    obj.rightHandCycle = new CameraSpacePoint();
                                     obj.leftHandOrigin = handLeft.Position;
                                     obj.rightHandOrigin = handRight.Position;
                                     obj.currentCount = obj.counter - 4;
@@ -341,10 +396,8 @@ namespace KinectHandTracking
 
                                 if (obj.currentCount + 5 == obj.counter)
                                 {
-                                    float maxLeftChange = Math.Max(diffAbsolut(handLeft.Position.X, obj.leftHandOrigin.X), Math.Max(diffAbsolut(handLeft.Position.Y, obj.leftHandOrigin.Y), diffAbsolut(handLeft.Position.Z, obj.leftHandOrigin.Z)));
-                                    float maxRightChange = Math.Max(diffAbsolut(handRight.Position.X, obj.rightHandOrigin.X), Math.Max(diffAbsolut(handRight.Position.Y, obj.rightHandOrigin.Y), diffAbsolut(handRight.Position.Z, obj.rightHandOrigin.Z)));
-                                    Console.WriteLine("used L " + Math.Round(body.Joints[JointType.HandLeft].Position.X, 4) + " " + Math.Round(body.Joints[JointType.HandLeft].Position.Y, 4) + " " + body.Joints[JointType.HandLeft].Position.Z);
-                                    Console.WriteLine("used R " + Math.Round(body.Joints[JointType.HandRight].Position.X, 4) + " " + Math.Round(body.Joints[JointType.HandRight].Position.Y, 4) + " " + body.Joints[JointType.HandRight].Position.Z);
+                                    maxLeftChange = Math.Max(diffAbsolut(handLeft.Position.X, obj.leftHandOrigin.X), Math.Max(diffAbsolut(handLeft.Position.Y, obj.leftHandOrigin.Y), diffAbsolut(handLeft.Position.Z, obj.leftHandOrigin.Z)));
+                                    maxRightChange = Math.Max(diffAbsolut(handRight.Position.X, obj.rightHandOrigin.X), Math.Max(diffAbsolut(handRight.Position.Y, obj.rightHandOrigin.Y), diffAbsolut(handRight.Position.Z, obj.rightHandOrigin.Z)));
                                     if (maxLeftChange > 0.03 || maxRightChange > 0.03)
                                     {
                                         leftCurrentOriginZdiff = handLeft.Position.Z - obj.leftHandOrigin.Z;
@@ -355,7 +408,7 @@ namespace KinectHandTracking
                                         rightCurrentOriginXdiff = handRight.Position.X - obj.rightHandOrigin.X;
 
                                         //check for zoom
-                                        if ((Math.Abs(leftCurrentOriginZdiff) < 0.1) && (Math.Abs(rightCurrentOriginZdiff) < 0.1))
+                                        if ((Math.Abs(leftCurrentOriginZdiff) < 0.07) && (Math.Abs(rightCurrentOriginZdiff) < 0.07))
                                         {
                                             originDistance = pointsDistance(obj.leftHandOrigin, obj.rightHandOrigin);
                                             currentDistance = pointsDistance(handLeft.Position, handRight.Position);
@@ -365,13 +418,31 @@ namespace KinectHandTracking
                                             mGrowth = mCurrent / mOrigin;
                                             if (Math.Abs((double)(1.0 - Math.Abs(distanceGrowth))) > 0.2)
                                             {
+                                                //Richtige Zoom Bewegung
+                                                if (leftCurrentOriginXdiff < 0 && leftCurrentOriginYdiff > 0 && rightCurrentOriginXdiff > 0 && rightCurrentOriginYdiff < 0) { }
+                                                else if (leftCurrentOriginXdiff < 0 && leftCurrentOriginYdiff < 0 && rightCurrentOriginXdiff > 0 && rightCurrentOriginYdiff > 0) { }
+                                                else if (leftCurrentOriginXdiff < 0 && leftCurrentOriginYdiff == 0 && rightCurrentOriginXdiff > 0 && rightCurrentOriginYdiff == 0) { }
+                                                else if (leftCurrentOriginXdiff > 0 && leftCurrentOriginYdiff < 0 && rightCurrentOriginXdiff < 0 && rightCurrentOriginYdiff > 0) { }
+                                                else if (leftCurrentOriginXdiff > 0 && leftCurrentOriginYdiff > 0 && rightCurrentOriginXdiff < 0 && rightCurrentOriginYdiff < 0) { }
+                                                else
+                                                {
+                                                    obj.currentCount = obj.counter;
+                                                    obj.leftHandCycle = new CameraSpacePoint();
+                                                    obj.rightHandCycle = new CameraSpacePoint();
+                                                    obj.leftHandOrigin = handLeft.Position;
+                                                    obj.rightHandOrigin = handRight.Position;
+                                                    obj.gestureState = HandGesture.closed;
+                                                    break;
+                                                }
+
+
                                                 obj.currentCount = obj.counter;
                                                 obj.gestureState = HandGesture.zoom;
                                                 obj.leftHandCycle = handLeft.Position;
                                                 obj.rightHandCycle = handRight.Position;
                                                 break;
                                             }
-                                            if ((Math.Abs(mGrowth) > 3.0) && ((Math.Abs(leftCurrentOriginXdiff) < 0.2) && (Math.Abs(rightCurrentOriginXdiff) < 0.2)))
+                                            if ((Math.Abs(mGrowth) > 2.5) && ((Math.Abs(leftCurrentOriginXdiff) < 0.15) && (Math.Abs(rightCurrentOriginXdiff) < 0.15)))
                                             {
                                                 if ((leftCurrentOriginYdiff < 0f) && (rightCurrentOriginYdiff > 0f))
                                                 {
@@ -432,34 +503,94 @@ namespace KinectHandTracking
                                 {
                                     obj.constantHandState = true;
                                 }
-
+                                float leftCycleZdiff = 0;
+                                float rightCycleZdiff = 0;
+                                float leftCycleYdiff = 0;
+                                float rightCycleYdiff = 0;
+                                if (obj.leftHandCycle != new CameraSpacePoint() && obj.rightHandCycle != new CameraSpacePoint())
+                                {
+                                    leftCycleZdiff = handLeft.Position.Z - obj.leftHandCycle.Z;
+                                    rightCycleZdiff = handRight.Position.Z - obj.rightHandCycle.Z;
+                                    leftCycleYdiff = handLeft.Position.Y - obj.leftHandCycle.Y;
+                                    rightCycleYdiff = handRight.Position.Y - obj.rightHandCycle.Y;
+                                }
                                 leftCurrentOriginZdiff = handLeft.Position.Z - obj.leftHandOrigin.Z;
                                 rightCurrentOriginZdiff = handRight.Position.Z - obj.rightHandOrigin.Z;
                                 leftCurrentOriginYdiff = handLeft.Position.Y - obj.leftHandOrigin.Y;
                                 rightCurrentOriginYdiff = handRight.Position.Y - obj.rightHandOrigin.Y;
                                 leftCurrentOriginXdiff = handLeft.Position.X - obj.leftHandOrigin.X;
                                 rightCurrentOriginXdiff = handRight.Position.X - obj.rightHandOrigin.X;
-
-                                if ((Math.Abs(leftCurrentOriginXdiff) < 0.08) && (Math.Abs(rightCurrentOriginXdiff) < 0.08))
+                                if ((leftCycleZdiff != 0 && rightCycleZdiff != 0) || (Math.Abs(leftCycleZdiff) < 0.03 && Math.Abs(rightCycleZdiff) < 0.03))
+                                {
+                                    if (Math.Abs(leftCycleYdiff) > 0.03 && Math.Abs(rightCycleYdiff) > 0.03)
+                                    {
+                                        if ((leftCycleYdiff < 0f) && (rightCycleYdiff > 0f))
+                                        {
+                                            obj.currentCount = obj.counter;
+                                            obj.gestureState = HandGesture.rotate;
+                                            obj.rightHandOrigin = obj.rightHandCycle;
+                                            obj.leftHandOrigin = obj.leftHandCycle;
+                                            obj.rightHandCycle = new CameraSpacePoint();
+                                            obj.leftHandCycle = new CameraSpacePoint();
+                                            break;
+                                        }
+                                        if ((leftCycleYdiff > 0f) && (rightCycleYdiff < 0f))
+                                        {
+                                            obj.currentCount = obj.counter;
+                                            obj.gestureState = HandGesture.rotate;
+                                            obj.rightHandOrigin = obj.rightHandCycle;
+                                            obj.leftHandOrigin = obj.leftHandCycle;
+                                            obj.rightHandCycle = new CameraSpacePoint();
+                                            obj.leftHandCycle = new CameraSpacePoint();
+                                            break;
+                                        }
+                                        //obj.currentCount = obj.counter;
+                                        //obj.gestureState = HandGesture.closed;
+                                        //obj.rightHandOrigin = handRight.Position;
+                                        //obj.leftHandOrigin = handLeft.Position;
+                                        //obj.rightHandCycle = new CameraSpacePoint();
+                                        //obj.leftHandCycle = new CameraSpacePoint();
+                                        //break;
+                                    }
+                                }
+                                if ((Math.Abs(leftCurrentOriginXdiff) < 0.1) && (Math.Abs(rightCurrentOriginXdiff) < 0.1))
                                 {
                                     if ((leftCurrentOriginZdiff < 0f) && (rightCurrentOriginZdiff > 0f))
                                     {
                                         obj.currentCount = obj.counter;
+                                        obj.leftHandCycle = handLeft.Position;
+                                        obj.rightHandCycle = handRight.Position;
                                         obj.onTilt();
+                                        break;
                                     }
                                     else if ((leftCurrentOriginZdiff > 0f) && (rightCurrentOriginZdiff < 0f))
                                     {
                                         obj.currentCount = obj.counter;
+                                        obj.leftHandCycle = handLeft.Position;
+                                        obj.rightHandCycle = handRight.Position;
                                         obj.onTilt();
+                                        break;
                                     }
                                 }
                                 else
                                 {
-                                    obj.gestureState = HandGesture.closed;
-                                    obj.leftHandOrigin = handLeft.Position;
-                                    obj.rightHandOrigin = handRight.Position;
-                                    obj.currentCount = obj.counter - 4;
+                                    if (leftCurrentOriginXdiff < 0 && leftCurrentOriginYdiff > 0 && rightCurrentOriginXdiff > 0 && rightCurrentOriginYdiff < 0) { }
+                                    else if (leftCurrentOriginXdiff < 0 && leftCurrentOriginYdiff < 0 && rightCurrentOriginXdiff > 0 && rightCurrentOriginYdiff > 0) { }
+                                    else if (leftCurrentOriginXdiff < 0 && leftCurrentOriginYdiff == 0 && rightCurrentOriginXdiff > 0 && rightCurrentOriginYdiff == 0) { }
+                                    else if (leftCurrentOriginXdiff > 0 && leftCurrentOriginYdiff < 0 && rightCurrentOriginXdiff < 0 && rightCurrentOriginYdiff > 0) { }
+                                    else if (leftCurrentOriginXdiff > 0 && leftCurrentOriginYdiff > 0 && rightCurrentOriginXdiff < 0 && rightCurrentOriginYdiff < 0) { }
+                                    else
+                                    {
+                                        obj.currentCount = obj.counter;
+                                        obj.leftHandCycle = new CameraSpacePoint();
+                                        obj.rightHandCycle = new CameraSpacePoint();
+                                        obj.leftHandOrigin = handLeft.Position;
+                                        obj.rightHandOrigin = handRight.Position;
+                                        obj.gestureState = HandGesture.closed;
+                                        break;
+                                    }
                                 }
+                                
                                 break;
                             #endregion
                             #region case: zoom
@@ -488,69 +619,162 @@ namespace KinectHandTracking
                                 {
                                     obj.constantHandState = true;
                                 }
-                                mCurrent = (handLeft.Position.Y - handRight.Position.Y) / (handLeft.Position.X - handRight.Position.X);
-                                mOrigin = (obj.leftHandCycle.Y - obj.rightHandCycle.Y) / (obj.leftHandCycle.X - obj.rightHandCycle.X);
-                                mGrowth = mCurrent / mOrigin;
 
-                                leftCurrentOriginZdiff = handLeft.Position.Z - obj.leftHandOrigin.Z;
-                                rightCurrentOriginZdiff = handRight.Position.Z - obj.rightHandOrigin.Z;
-                                leftCurrentOriginYdiff = handLeft.Position.Y - obj.leftHandOrigin.Y;
-                                rightCurrentOriginYdiff = handRight.Position.Y - obj.rightHandOrigin.Y;
-                                leftCurrentOriginXdiff = handLeft.Position.X - obj.leftHandOrigin.X;
-                                rightCurrentOriginXdiff = handRight.Position.X - obj.rightHandOrigin.X;
-
-                                originDistance = pointsDistance(obj.leftHandCycle, obj.rightHandCycle);
-                                distanceGrowth = pointsDistance(handLeft.Position, handRight.Position) / originDistance;
-
-                                mXZorigin = (obj.leftHandOrigin.Z - obj.rightHandOrigin.Z) / (obj.leftHandOrigin.X - obj.rightHandOrigin.X);
-                                mXZcurrent = (handLeft.Position.Z - handRight.Position.Z) / (handLeft.Position.X - handRight.Position.X);
-                                mXZgrowth = mXZcurrent / mXZorigin;
-
-                                if ((Math.Abs(leftCurrentOriginZdiff) < 0.15) && (Math.Abs(rightCurrentOriginZdiff) < 0.15))
+                                if (obj.currentCount + 5 == obj.counter)
                                 {
-                                    if (Math.Abs(handLeft.Position.X - obj.leftHandCycle.X) < 0.03 && Math.Abs(handRight.Position.X - obj.rightHandCycle.X) < 0.03)
+                                    maxLeftChange = Math.Max(diffAbsolut(handLeft.Position.X, obj.leftHandCycle.X), Math.Max(diffAbsolut(handLeft.Position.Y, obj.leftHandCycle.Y), diffAbsolut(handLeft.Position.Z, obj.leftHandCycle.Z)));
+                                    maxRightChange = Math.Max(diffAbsolut(handRight.Position.X, obj.rightHandCycle.X), Math.Max(diffAbsolut(handRight.Position.Y, obj.rightHandCycle.Y), diffAbsolut(handRight.Position.Z, obj.rightHandCycle.Z)));
+                                    
+                                    if (maxLeftChange > 0.03 || maxRightChange > 0.03)
                                     {
-                                        if (Math.Abs(handLeft.Position.Y - obj.leftHandCycle.Y) > 0.04 && Math.Abs(handRight.Position.Y - obj.rightHandCycle.Y) > 0.04)
+                                        leftCurrentOriginZdiff = handLeft.Position.Z - obj.leftHandOrigin.Z;
+                                        rightCurrentOriginZdiff = handRight.Position.Z - obj.rightHandOrigin.Z;
+                                        leftCurrentOriginYdiff = handLeft.Position.Y - obj.leftHandOrigin.Y;
+                                        rightCurrentOriginYdiff = handRight.Position.Y - obj.rightHandOrigin.Y;
+                                        leftCurrentOriginXdiff = handLeft.Position.X - obj.leftHandOrigin.X;
+                                        rightCurrentOriginXdiff = handRight.Position.X - obj.rightHandOrigin.X;
+
+                                        // Cycle difference
+                                        float leftCurrentCycleYdiff = handLeft.Position.Y - obj.leftHandCycle.Y;
+                                        float rightCurrentCycleYdiff = handRight.Position.Y - obj.rightHandCycle.Y;
+                                        float leftCurrentCycleXdiff = handLeft.Position.X - obj.leftHandCycle.X;
+                                        float rightCurrentCycleXdiff = handRight.Position.X - obj.rightHandCycle.X;
+
+                                        if ((Math.Abs(leftCurrentOriginZdiff) < 0.07) && (Math.Abs(rightCurrentOriginZdiff) < 0.07))
                                         {
-                                            obj.gestureState = HandGesture.closed;
-                                            obj.leftHandOrigin = handLeft.Position;
-                                            obj.rightHandOrigin = handRight.Position;
-                                            obj.leftHandCycle = new CameraSpacePoint();
-                                            obj.rightHandCycle = new CameraSpacePoint();
-                                            obj.currentCount = obj.counter - 4;
+                                            mCurrent = (handLeft.Position.Y - handRight.Position.Y) / (handLeft.Position.X - handRight.Position.X);
+                                            mOrigin = (obj.leftHandCycle.Y - obj.rightHandCycle.Y) / (obj.leftHandCycle.X - obj.rightHandCycle.X);
+                                            mGrowth = mCurrent / mOrigin;
+
+                                            originDistance = pointsDistance(obj.leftHandCycle, obj.rightHandCycle);
+                                            currentDistance = pointsDistance(handLeft.Position, handRight.Position);
+                                            distanceGrowth = currentDistance / originDistance;
+
+
+                                            mXZorigin = (obj.leftHandOrigin.Z - obj.rightHandOrigin.Z) / (obj.leftHandOrigin.X - obj.rightHandOrigin.X);
+                                            mXZcurrent = (handLeft.Position.Z - handRight.Position.Z) / (handLeft.Position.X - handRight.Position.X);
+                                            mXZgrowth = mXZcurrent / mXZorigin;
+                                        
+                                            if (Math.Abs((double)(1.0 - Math.Abs(distanceGrowth))) > 0.15)
+                                            {
+                                                // check if still in line
+                                                if (leftCurrentOriginXdiff < 0 && leftCurrentOriginYdiff > 0 && rightCurrentOriginXdiff > 0 && rightCurrentOriginYdiff < 0) { }
+                                                else if (leftCurrentOriginXdiff < 0 && leftCurrentOriginYdiff < 0 && rightCurrentOriginXdiff > 0 && rightCurrentOriginYdiff > 0) { }
+                                                else if (leftCurrentOriginXdiff < 0 && leftCurrentOriginYdiff == 0 && rightCurrentOriginXdiff > 0 && rightCurrentOriginYdiff == 0) { }
+                                                else if (leftCurrentOriginXdiff > 0 && leftCurrentOriginYdiff < 0 && rightCurrentOriginXdiff < 0 && rightCurrentOriginYdiff > 0) { }
+                                                else if (leftCurrentOriginXdiff > 0 && leftCurrentOriginYdiff > 0 && rightCurrentOriginXdiff < 0 && rightCurrentOriginYdiff < 0) { }
+                                                else
+                                                {
+                                                    obj.currentCount = obj.counter;
+                                                    obj.leftHandCycle = new CameraSpacePoint();
+                                                    obj.rightHandCycle = new CameraSpacePoint();
+                                                    obj.leftHandOrigin = handLeft.Position;
+                                                    obj.rightHandOrigin = handRight.Position;
+                                                    obj.gestureState = HandGesture.closed;
+                                                    break;
+                                                }
+
+                                                obj.currentCount = obj.counter;
+                                                obj.leftHandCycle = handLeft.Position;
+                                                obj.rightHandCycle = handRight.Position;
+                                                obj.onZoom();
+                                                break;
+                                            }
+                                            else if ((Math.Abs(mGrowth) > 2.5) && ((Math.Abs(leftCurrentCycleXdiff) < 0.15) && (Math.Abs(rightCurrentCycleXdiff) < 0.15)))
+                                            {
+                                                if ((leftCurrentCycleYdiff < 0f) && (rightCurrentCycleYdiff > 0f))
+                                                {
+                                                    obj.currentCount = obj.counter;
+                                                    obj.gestureState = HandGesture.rotate;
+                                                    obj.rightHandOrigin = obj.rightHandCycle;
+                                                    obj.leftHandOrigin = obj.leftHandCycle;
+                                                    obj.rightHandCycle = new CameraSpacePoint();
+                                                    obj.leftHandCycle = new CameraSpacePoint();
+                                                    break;
+                                                }
+                                                if ((leftCurrentCycleYdiff > 0f) && (rightCurrentCycleYdiff < 0f))
+                                                {
+                                                    obj.currentCount = obj.counter;
+                                                    obj.gestureState = HandGesture.rotate;
+                                                    obj.rightHandOrigin = obj.rightHandCycle;
+                                                    obj.leftHandOrigin = obj.leftHandCycle;
+                                                    obj.rightHandCycle = new CameraSpacePoint();
+                                                    obj.leftHandCycle = new CameraSpacePoint();
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        else if ((Math.Abs(leftCurrentCycleXdiff) < 0.1) && (Math.Abs(rightCurrentCycleXdiff) < 0.1))
+                                        {
+                                            if ((leftCurrentOriginZdiff < 0f) && (rightCurrentOriginZdiff > 0f))
+                                            {
+                                                obj.currentCount = obj.counter;
+                                                obj.gestureState = HandGesture.tilt;
+                                                obj.rightHandOrigin = obj.rightHandCycle;
+                                                obj.leftHandOrigin = obj.leftHandCycle;
+                                                obj.rightHandCycle = new CameraSpacePoint();
+                                                obj.leftHandCycle = new CameraSpacePoint();
+                                                break;
+                                            }
+                                            if ((leftCurrentOriginZdiff > 0f) && (rightCurrentOriginZdiff < 0f))
+                                            {
+                                                obj.currentCount = obj.counter;
+                                                obj.gestureState = HandGesture.tilt;
+                                                obj.rightHandOrigin = obj.rightHandCycle;
+                                                obj.leftHandOrigin = obj.leftHandCycle;
+                                                obj.rightHandCycle = new CameraSpacePoint();
+                                                obj.leftHandCycle = new CameraSpacePoint();
+                                                break;
+                                            }
                                         }
                                     }
-
-                                    //if ((Math.Abs((double)(1.0 - Math.Abs(distanceGrowth))) < 0.1) && (mGrowth > 3.0))
+                                    obj.currentCount = obj.counter;
+                                    obj.leftHandCycle = handLeft.Position;
+                                    obj.rightHandCycle = handRight.Position;
+                                }
+                                    #region zoom handling
+                                    //if (Math.Abs(handLeft.Position.X - obj.leftHandCycle.X) < 0.03 && Math.Abs(handRight.Position.X - obj.rightHandCycle.X) < 0.03)
                                     //{
-                                    //    obj.gestureState = HandGesture.closed;
-                                    //    obj.leftHandOrigin = handLeft.Position;
-                                    //    obj.rightHandOrigin = handRight.Position;
-                                    //    obj.leftHandCycle = new CameraSpacePoint();
-                                    //    obj.rightHandCycle = new CameraSpacePoint();
-                                    //    obj.currentCount = obj.counter - 4;
+                                    //    if (Math.Abs(handLeft.Position.Y - obj.leftHandCycle.Y) > 0.04 && Math.Abs(handRight.Position.Y - obj.rightHandCycle.Y) > 0.04)
+                                    //    {
+                                    //        if (handLeft.Position.Y - obj.leftHandCycle.Y < 0 && handRight.Position.Y - obj.rightHandCycle.Y > 0)
+                                    //        {
+                                    //            obj.gestureState = HandGesture.rotate;
+                                    //            obj.leftHandOrigin = obj.leftHandCycle;
+                                    //            obj.rightHandOrigin = obj.rightHandCycle;
+                                    //            obj.leftHandCycle = new CameraSpacePoint();
+                                    //            obj.rightHandCycle = new CameraSpacePoint();
+                                    //            obj.currentCount = obj.counter;
+                                    //        }
+                                    //        else if (handLeft.Position.Y - obj.leftHandCycle.Y > 0 && handRight.Position.Y - obj.rightHandCycle.Y < 0)
+                                    //        {
+                                    //            obj.gestureState = HandGesture.rotate;
+                                    //            obj.leftHandOrigin = obj.leftHandCycle;
+                                    //            obj.rightHandOrigin = obj.rightHandCycle;
+                                    //            obj.leftHandCycle = new CameraSpacePoint();
+                                    //            obj.rightHandCycle = new CameraSpacePoint();
+                                    //            obj.currentCount = obj.counter;
+                                    //        }
+                                    //        obj.gestureState = HandGesture.closed;
+                                    //        obj.leftHandOrigin = obj.leftHandCycle;
+                                    //        obj.rightHandOrigin = obj.rightHandCycle;
+                                    //        obj.leftHandCycle = new CameraSpacePoint();
+                                    //        obj.rightHandCycle = new CameraSpacePoint();
+                                    //        obj.currentCount = obj.counter - 3;
+                                    //    }
                                     //}
-                                    else
-                                    {
-                                        if ((obj.currentCount + 15) == obj.counter)
-                                        {
-                                            obj.leftHandCycle = handLeft.Position;
-                                            obj.rightHandCycle = handRight.Position;
-                                            obj.currentCount = obj.counter;
-                                        }
-                                        obj.onZoom();
-                                    }
-                                    Console.WriteLine("hihjo");
-                                }
-                                else
-                                {
-                                    obj.gestureState = HandGesture.closed;
-                                    obj.leftHandOrigin = handLeft.Position;
-                                    obj.rightHandOrigin = handRight.Position;
-                                    obj.leftHandCycle = new CameraSpacePoint();
-                                    obj.rightHandCycle = new CameraSpacePoint();
-                                    obj.currentCount = obj.counter - 4;
-                                }
+                                    //else
+                                    //{
+                                    //    if ((obj.currentCount + 5) == obj.counter)
+                                    //    {
+                                    //        obj.leftHandCycle = handLeft.Position;
+                                    //        obj.rightHandCycle = handRight.Position;
+                                    //        obj.currentCount = obj.counter;
+                                    //    }
+                                    //    obj.onZoom();
+                                    //}
+                                #endregion
+                                
                                 break;
                             #endregion
                             #region detecting HandGesture
