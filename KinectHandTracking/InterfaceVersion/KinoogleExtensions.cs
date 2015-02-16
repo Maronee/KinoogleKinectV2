@@ -132,40 +132,43 @@ namespace KinectHandTracking
                         foreach (Gesture g in obj.vgbFrameSource.Gestures)
                         {
                             var result = frame.DiscreteGestureResults[g];
-                            switch (g.Name)
+                            if (obj.gestureState != HandGesture.none)
                             {
-                                case leftUp:
-                                    if (result.Confidence > 0.8) { obj.onLeftUp(result.Detected, result.Confidence); } else { obj.onLeftUp(false, result.Confidence); }
-                                    break;
-                                case upRight:
-                                    if (result.Confidence > 0.9) { obj.onUpRight(result.Detected, result.Confidence); } else { obj.onUpRight(false, result.Confidence); }
-                                    break;
-                                case leftRight:
-                                    if (result.Confidence > 0.8) { obj.onLeftRight(result.Detected, result.Confidence); } else { obj.onLeftRight(false, result.Confidence); }
-                                    break;
-                                case upUp:
-                                    if (result.Confidence > 0.8) { obj.onUpUp(result.Detected, result.Confidence); } else { obj.onUpUp(false, result.Confidence); }
-                                    break;
-                                case stretchedArms:
-                                    if (result.Confidence > 0.8) { obj.onStretched(result.Detected, result.Confidence); } else { obj.onStretched(false, result.Confidence); }
-                                    break;
-                                case touchdown:
-                                    if (result.Confidence > 0.8) { obj.onTouchdown(result.Detected, result.Confidence); } else { obj.onTouchdown(false, result.Confidence); }
-                                    break;
-                                case walkingLeft:
-                                    if (result.Confidence > 0.8) { obj.onWalkingLeft(result.Detected, result.Confidence); } else { obj.onWalkingLeft(false, result.Confidence); }
-                                    break;
-                                case walkingRight:
-                                    if (result.Confidence > 0.8) { obj.onWalkingRight(result.Detected, result.Confidence); } else { obj.onWalkingRight(false, result.Confidence); }
-                                    break;
-                                case turnLeft:
-                                    if (result.Confidence > 0.8) { obj.onTurnLeft(result.Detected, result.Confidence); } else { obj.onTurnLeft(false, result.Confidence); }
-                                    break;
-                                case turnRight:
-                                    if (result.Confidence > 0.8) { obj.onTurnRight(result.Detected, result.Confidence); } else { obj.onTurnRight(false, result.Confidence); }
-                                    break;
-                                default:
-                                    break;
+                                switch (g.Name)
+                                {
+                                    case leftUp:
+                                        if (result.Confidence > 0.8) { obj.onLeftUp(result.Detected, result.Confidence); } else { obj.onLeftUp(false, result.Confidence); }
+                                        break;
+                                    case upRight:
+                                        if (result.Confidence > 0.9) { obj.onUpRight(result.Detected, result.Confidence); } else { obj.onUpRight(false, result.Confidence); }
+                                        break;
+                                    case leftRight:
+                                        if (result.Confidence > 0.8) { obj.onLeftRight(result.Detected, result.Confidence); } else { obj.onLeftRight(false, result.Confidence); }
+                                        break;
+                                    case upUp:
+                                        if (result.Confidence > 0.8) { obj.onUpUp(result.Detected, result.Confidence); } else { obj.onUpUp(false, result.Confidence); }
+                                        break;
+                                    case stretchedArms:
+                                        if (result.Confidence > 0.8) { obj.onStretched(result.Detected, result.Confidence); } else { obj.onStretched(false, result.Confidence); }
+                                        break;
+                                    case touchdown:
+                                        if (result.Confidence > 0.8) { obj.onTouchdown(result.Detected, result.Confidence); } else { obj.onTouchdown(false, result.Confidence); }
+                                        break;
+                                    case walkingLeft:
+                                        if (result.Confidence > 0.8) { obj.onWalkingLeft(result.Detected, result.Confidence); } else { obj.onWalkingLeft(false, result.Confidence); }
+                                        break;
+                                    case walkingRight:
+                                        if (result.Confidence > 0.8) { obj.onWalkingRight(result.Detected, result.Confidence); } else { obj.onWalkingRight(false, result.Confidence); }
+                                        break;
+                                    case turnLeft:
+                                        if (result.Confidence > 0.8) { obj.onTurnLeft(result.Detected, result.Confidence); } else { obj.onTurnLeft(false, result.Confidence); }
+                                        break;
+                                    case turnRight:
+                                        if (result.Confidence > 0.8) { obj.onTurnRight(result.Detected, result.Confidence); } else { obj.onTurnRight(false, result.Confidence); }
+                                        break;
+                                    default:
+                                        break;
+                                }
                             }
                         }
                     }
@@ -589,6 +592,13 @@ namespace KinectHandTracking
                                         obj.gestureState = HandGesture.closed;
                                         break;
                                     }
+                                    obj.currentCount = obj.counter;
+                                    obj.leftHandCycle = handLeft.Position;
+                                    obj.rightHandCycle = handRight.Position;
+                                    obj.leftHandOrigin = handLeft.Position;
+                                    obj.rightHandOrigin = handRight.Position;
+                                    obj.gestureState = HandGesture.zoom;
+                                    break;
                                 }
                                 
                                 break;
@@ -620,7 +630,7 @@ namespace KinectHandTracking
                                     obj.constantHandState = true;
                                 }
 
-                                if (obj.currentCount + 5 == obj.counter)
+                                if (obj.currentCount + 10 == obj.counter)
                                 {
                                     maxLeftChange = Math.Max(diffAbsolut(handLeft.Position.X, obj.leftHandCycle.X), Math.Max(diffAbsolut(handLeft.Position.Y, obj.leftHandCycle.Y), diffAbsolut(handLeft.Position.Z, obj.leftHandCycle.Z)));
                                     maxRightChange = Math.Max(diffAbsolut(handRight.Position.X, obj.rightHandCycle.X), Math.Max(diffAbsolut(handRight.Position.Y, obj.rightHandCycle.Y), diffAbsolut(handRight.Position.Z, obj.rightHandCycle.Z)));
@@ -640,7 +650,7 @@ namespace KinectHandTracking
                                         float leftCurrentCycleXdiff = handLeft.Position.X - obj.leftHandCycle.X;
                                         float rightCurrentCycleXdiff = handRight.Position.X - obj.rightHandCycle.X;
 
-                                        if ((Math.Abs(leftCurrentOriginZdiff) < 0.07) && (Math.Abs(rightCurrentOriginZdiff) < 0.07))
+                                        if ((Math.Abs(leftCurrentOriginZdiff) < 0.11 && Math.Abs(rightCurrentOriginZdiff) < 0.11))
                                         {
                                             mCurrent = (handLeft.Position.Y - handRight.Position.Y) / (handLeft.Position.X - handRight.Position.X);
                                             mOrigin = (obj.leftHandCycle.Y - obj.rightHandCycle.Y) / (obj.leftHandCycle.X - obj.rightHandCycle.X);
@@ -680,7 +690,7 @@ namespace KinectHandTracking
                                                 obj.onZoom();
                                                 break;
                                             }
-                                            else if ((Math.Abs(mGrowth) > 2.5) && ((Math.Abs(leftCurrentCycleXdiff) < 0.15) && (Math.Abs(rightCurrentCycleXdiff) < 0.15)))
+                                            else if ((Math.Abs(mGrowth) > 2.5) && ((Math.Abs(leftCurrentCycleXdiff) < 0.1) && (Math.Abs(rightCurrentCycleXdiff) < 0.1)))
                                             {
                                                 if ((leftCurrentCycleYdiff < 0f) && (rightCurrentCycleYdiff > 0f))
                                                 {
@@ -704,7 +714,7 @@ namespace KinectHandTracking
                                                 }
                                             }
                                         }
-                                        else if ((Math.Abs(leftCurrentCycleXdiff) < 0.1) && (Math.Abs(rightCurrentCycleXdiff) < 0.1))
+                                        else if ((Math.Abs(leftCurrentCycleXdiff) < 0.05) && (Math.Abs(rightCurrentCycleXdiff) < 0.05))
                                         {
                                             if ((leftCurrentOriginZdiff < 0f) && (rightCurrentOriginZdiff > 0f))
                                             {
