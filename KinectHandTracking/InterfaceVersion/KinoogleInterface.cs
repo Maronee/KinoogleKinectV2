@@ -7,7 +7,7 @@ using Microsoft.Kinect;
 using Microsoft.Kinect.Wpf.Controls;
 using Microsoft.Kinect.VisualGestureBuilder;
 
-namespace KinectHandTracking
+namespace Kinect
 {
     public interface KinoogleInterface
     {
@@ -31,6 +31,10 @@ namespace KinectHandTracking
         VisualGestureBuilderFrameSource vgbFrameSource { get; set; }
         VisualGestureBuilderFrameReader vgbFrameReader { get; set; }
 
+        double usedDistance { get; set; }
+        float mCycle { get; set; }
+        string currentGesture { get; set; }
+
         void startKinoogleDetection();
         void bodyReader_FrameArrived(object sender, BodyFrameArrivedEventArgs e);
         void vgbFrameReader_FrameArrived(object sender, VisualGestureBuilderFrameArrivedEventArgs e);
@@ -38,9 +42,9 @@ namespace KinectHandTracking
         #region events
         #region HandStateGesture
         void onPan(float xDiff, float yDiff);
-        void onRotate();
+        void onRotate(double mDiff, bool right);
         void onTilt();
-        void onZoom();
+        void onZoom(double distDelta);
         #endregion
         #region vgbGesture
         void onUpUp(bool isDetected, float confidence);

@@ -15,6 +15,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Kinect.Wpf.Controls;
 using Microsoft.Kinect.VisualGestureBuilder;
+using Kinect;
 
 namespace KinectHandTracking
 {
@@ -625,6 +626,10 @@ namespace KinectHandTracking
         VisualGestureBuilderFrameSource _vgbFrameSource;
         VisualGestureBuilderFrameReader _vgbFrameReader;
 
+        double _usedDistance;
+        string _currentGesture;
+        float _mCycle;
+
         KinectRegion KinoogleInterface.kinectRegion
         {
             get
@@ -805,6 +810,42 @@ namespace KinectHandTracking
             }
         }
 
+        public double usedDistance
+        {
+            get
+            {
+                return _usedDistance;
+            }
+            set
+            {
+                _usedDistance = value;
+            }
+        }
+
+        public string currentGesture
+        {
+            get
+            {
+                return _currentGesture;
+            }
+            set
+            {
+                _currentGesture = value;
+            }
+        }
+
+        public float mCycle
+        {
+            get
+            {
+                return _mCycle;
+            }
+            set
+            {
+                _mCycle = value;
+            }
+        }
+
         public void startKinoogleDetection()
         {
             this.initKinoogle();
@@ -826,7 +867,7 @@ namespace KinectHandTracking
             gestDetect();
         }
 
-        public void onRotate()
+        public void onRotate(double mDiff, bool right)
         {
             gestDetect();
         }
@@ -836,7 +877,7 @@ namespace KinectHandTracking
             gestDetect();
         }
 
-        public void onZoom()
+        public void onZoom(double distDelta)
         {
             gestDetect();
         }
@@ -942,5 +983,6 @@ namespace KinectHandTracking
         }
 
         #endregion
+
     }
 }
